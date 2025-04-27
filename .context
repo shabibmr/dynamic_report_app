@@ -1,0 +1,32 @@
+Use flutter_bloc for state management
+Use clean architecture for the project.
+Use pluto_grid package for table widget.
+Use Material 3 design.
+Use go_router for navigation.
+Implement localization using flutter_localizations.
+Implement exceptions and error handling.
+The Project is to Generate Report in table format.
+All Reports will be listed in a listview.
+when a report is selected, UI page is generated for the report.
+Report UI Page will contain.
+**Report Name
+**Report Filters.
+ - Date
+ - Date Range
+ - Entity Search.
+**Go Button.
+**Table widget to display report.
+**The Reports Meta data is stored in the following table in MYSQL
+
+CREATE TABLE ui_config ( _id int(11) NOT NULL AUTO_INCREMENT, report_name varchar(50) NOT NULL, Module varchar(50) DEFAULT NULL, ui_type varchar(20) DEFAULT NULL, sub_type varchar(20) DEFAULT NULL, query longtext DEFAULT NULL, filters longtext DEFAULT NULL, display_options longtext DEFAULT NULL, redirect_to longtext DEFAULT NULL, Extras longtext DEFAULT NULL, PRIMARY KEY (_id) )
+
+Sample Row INSERT INTO ui_config (_id, report_name, Module, ui_type, sub_type, query, filters, display_options, redirect_to, Extras) VALUES (NULL, 'Groupwise Sales Report', 'Inventory', 'Reports', 'Inventory', 'select Ind,ID,itemGrp.group_name as Name,SUM(Quantity) as Quantity, SUM(Subtotal) as Value from $trans_db.sales_invoice_details det inner join (select ItemGrp1.group_name, Item.item_id, 'G' as Ind,ItemGrp1.group_id as ID from $master_db.sales_inventory_items item inner join (with recursive cte (group_id, group_name, parent_id, item_id) as ( select grp.group_id,grp.group_name,grp.parent_id, item.item_id from $master_db.sales_inventory_items item left outer join sales_inventory_groups grp on item.group_id = grp.group_id union all select p.group_id, p.group_name,p.parent_id, item_id from $master_db.sales_inventory_groups p inner join cte on p.group_id = cte.parent_id ) select cte.group_name, cte.item_id, cte.group_id from cte where cte.parent_id = '$f1') itemGrp1 on itemGrp1.item_id = item.item_id union select Item2.Item_name, Item2.Item_id, 'I' as ind,Item2.Item_id as ID from $master_db.sales_inventory_items Item2 where Item2.group_id = '$f1') itemGrp on det.inventory_item_id = itemGrp.item_id where det.Voucher_no in ( SELECT Voucher_No from $trans_db.Sales_Invoice_Main main where str_to_Date(concat(main.voucher_date, substr(timestamp, 11,19)) ,'%Y-%m-%d %H:%i:%s') >= str_to_date('$fromDateTime','%Y-%m-%d %H:%i:%s') and str_to_Date(concat(main.voucher_date, substr(timestamp, 11,19)) ,'%Y-%m-%d %H:%i:%s') <=str_to_date('$toDateTime','%Y-%m-%d %H:%i:%s') ) group by itemGrp.group_name ORDER BY 1,2', '{"filter by":[{"var-name":"f1","var-value":"group"}],"dateTime":["fromDateTime","toDateTime"]}', '{"Totals":[3,4],"Hide":[0,1], "width-list":[40,20,20], "align-list":[0,1,1], "print-cols":[2,3,4], "stretch":2}', '{"redirect-to":[{"default":{"id":2, "keyList":[{"var-name":"f1", "col-pos":1, "filter-type":"item"}]}}]}', NULL)
+
+**USE http webservice to get reports list and report data.
+**Use dio package for http webservice.
+**Webservice to get reports list will be called when the app is launched.
+**Webservice to get report data will be called when the user clicks on the Go button.
+**Use shared_preferences to store the reports list in local storage.
+**Export the report data to excel and pdf format.
+**Print Support.
+**Support Android, iOS, Web and Desktop platforms.
