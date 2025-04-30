@@ -1,9 +1,11 @@
-import '../models/report.dart';
+import 'package:dynamic_report_app/core/models/report_config.dart';
+
+// import '../models/report.dart.txt';
 
 class TestData {
-  static List<Report> getSampleReports() {
+  static List<ReportConfig> getSampleReports() {
     return [
-      Report(
+      const ReportConfig(
         id: 1,
         reportName: 'Groupwise Sales Report',
         filters: {

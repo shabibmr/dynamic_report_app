@@ -10,8 +10,8 @@ class ReportListBloc extends Bloc<ReportListEvent, ReportListState> {
   final ReportRepository _reportRepository;
 
   ReportListBloc({required ReportRepository reportRepository})
-    : _reportRepository = reportRepository,
-      super(const ReportListState()) {
+      : _reportRepository = reportRepository,
+        super(const ReportListState()) {
     on<LoadReportList>(_onLoadReportList);
     on<SelectReport>(_onSelectReport);
     on<SearchReports>(_onSearchReports);
@@ -24,12 +24,12 @@ class ReportListBloc extends Bloc<ReportListEvent, ReportListState> {
     emit(state.copyWith(status: ReportListStatus.loading));
 
     try {
-      final reports = await _reportRepository.getReportsList();
+      final reports = await _reportRepository.getReports();
       emit(
         state.copyWith(
           status: ReportListStatus.success,
           reports: reports,
-          filteredReports: reports,
+          // filteredReports: reports,
         ),
       );
     } catch (e) {
@@ -40,6 +40,9 @@ class ReportListBloc extends Bloc<ReportListEvent, ReportListState> {
   }
 
   void _onSelectReport(SelectReport event, Emitter<ReportListState> emit) {
+    if ((state.selectedReport?.id ?? 0) == event.reportId) {
+      return;
+    }
     final selectedReport = state.reports.firstWhere(
       (report) => report.id == event.reportId,
       orElse: () => state.selectedReport!,
@@ -50,20 +53,19 @@ class ReportListBloc extends Bloc<ReportListEvent, ReportListState> {
 
   void _onSearchReports(SearchReports event, Emitter<ReportListState> emit) {
     if (event.query.isEmpty) {
-      emit(state.copyWith(filteredReports: state.reports));
+      emit(state.copyWith(reports: state.reports));
       return;
     }
 
-    final filteredReports =
-        state.reports.where((report) {
-          final searchLower = event.query.toLowerCase();
-          final nameLower = report.reportName.toLowerCase();
-          final moduleLower = report.module?.toLowerCase() ?? '';
+    final filteredReports = state.reports.where((report) {
+      final searchLower = event.query.toLowerCase();
+      final nameLower = report.reportName.toLowerCase();
+      final moduleLower = report.module?.toLowerCase() ?? '';
 
-          return nameLower.contains(searchLower) ||
-              moduleLower.contains(searchLower);
-        }).toList();
+      return nameLower.contains(searchLower) ||
+          moduleLower.contains(searchLower);
+    }).toList();
 
-    emit(state.copyWith(filteredReports: filteredReports));
+    emit(state.copyWith(reports: filteredReports));
   }
 }

@@ -12,6 +12,13 @@ $dbConfig = [
     'pass' => 'user2grey'
 ];
 
+$datadbConfig = [
+    'host' => 'localhost',
+    'dbname' => 'gmblue',
+    'user' => 'user2grey',
+    'pass' => 'user2grey'
+];
+
 function getDB($config) {
     try {
         $pdo = new PDO(
@@ -31,10 +38,9 @@ function getDB($config) {
 function buildQuery($query, $filters, $pdo) {
     // Replace database variables if present
     $dbVars = [
-        '$trans_db' => 'erp_trans',  // Add your actual database names
-        '$master_db' => 'erp_master'
+        '$trans_db' => '',  // Add your actual database names
+        '$master_db' => 'gmblue',
     ];
-    
     foreach ($dbVars as $var => $value) {
         $query = str_replace($var, $value, $query);
     }
@@ -54,19 +60,32 @@ function buildQuery($query, $filters, $pdo) {
             }
         }
     }
-    
     return $query;
 }
 
-$path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$basePath = '/api'; // Define the base path where index.php resides relative to doc root
+$requestUri = $_SERVER['REQUEST_URI'];
+$rawPath = parse_url($requestUri, PHP_URL_PATH);
 $method = $_SERVER['REQUEST_METHOD'];
 
+
+// Remove the base path prefix if it exists
+if (substr($rawPath, 0, strlen($basePath)) == $basePath) {
+    $path = substr($rawPath, strlen($basePath));
+} else {
+    $path = $rawPath;
+}
+
+// Ensure the path starts with a slash for the switch statement
+if (empty($path) || $path[0] !== '/') {
+    $path = '/' . $path;
+}
 switch ($path) {
     case '/list':
         if ($method === 'GET') {
             try {
                 $pdo = getDB($dbConfig);
-                $stmt = $pdo->query("SELECT _id as id, report_name, filters FROM ui_config");
+                $stmt = $pdo->query("SELECT _id as id, ui_name as 'report_name', filters FROM ui_config");
                 $reports = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 echo json_encode(['reports' => $reports]);
             } catch (PDOException $e) {
@@ -102,6 +121,7 @@ switch ($path) {
                 $query = buildQuery($config['query'], $data['filters'] ?? [], $pdo);
 
                 // Execute the query
+                $pdo = getDB($datadbConfig);
                 $result = $pdo->query($query);
                 if (!$result) {
                     throw new PDOException("Query execution failed");
@@ -110,7 +130,7 @@ switch ($path) {
                 $reportData = $result->fetchAll(PDO::FETCH_ASSOC);
 
                 echo json_encode([
-                    'name' => $config['report_name'],
+                    'report_id' => $config['_id'],
                     'data' => $reportData,
                     'display_options' => json_decode($config['display_options'], true),
                     'ui_type' => $config['ui_type'],

@@ -1,4 +1,3 @@
-import '../models/report.dart';
 import '../models/report_config.dart';
 import '../network/api_client.dart';
 import 'report_repository.dart';
@@ -10,10 +9,10 @@ class ReportRepositoryImpl implements ReportRepository {
       : _apiClient = apiClient;
 
   @override
-  Future<List<Report>> getReports() async {
+  Future<List<ReportConfig>> getReports() async {
     try {
       final response = await _apiClient.getReportsList();
-      return response.map((json) => Report.fromJson(json)).toList();
+      return response.map((json) => ReportConfig.fromJson(json)).toList();
     } catch (e) {
       throw Exception('Failed to fetch reports: $e');
     }
@@ -22,11 +21,11 @@ class ReportRepositoryImpl implements ReportRepository {
   @override
   Future<Map<String, dynamic>> executeReport(
     ReportConfig report,
-    Map<String, dynamic> filters,
   ) async {
     try {
-      final response = await _apiClient.executeReport(report.id, filters);
-      return {'data': response};
+      final response =
+          await _apiClient.executeReport(report.id, report.filters);
+      return response;
     } catch (e) {
       throw Exception('Failed to execute report: $e');
     }

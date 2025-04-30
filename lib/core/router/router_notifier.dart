@@ -12,7 +12,7 @@ class RouterNotifier extends ChangeNotifier {
 
   Future<void> _loadReports() async {
     try {
-      _reports = await _reportRepository.getReportsList();
+      _reports = await _reportRepository.getReports();
       notifyListeners();
     } catch (e) {
       // Handle error silently, reports will be empty

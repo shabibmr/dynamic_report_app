@@ -76,7 +76,7 @@ class ReportExporter {
       final cell = sheet.cell(
         CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 0),
       );
-      cell.value = headers[i];
+      cell.value = TextCellValue(headers[i]);
       cell.cellStyle = CellStyle(
         bold: true,
         horizontalAlign: HorizontalAlign.Center,
@@ -94,7 +94,16 @@ class ReportExporter {
             rowIndex: rowIndex + 1,
           ),
         );
-        cell.value = row[colIndex];
+        final cellValue = row[colIndex];
+        if (cellValue is int) {
+          cell.value = IntCellValue(cellValue);
+        } else if (cellValue is double) {
+          cell.value = DoubleCellValue(cellValue);
+        } else if (cellValue is DateTime) {
+          cell.value = DateTimeCellValue.fromDateTime(cellValue);
+        } else {
+          cell.value = TextCellValue(cellValue.toString());
+        }
 
         // Apply number formatting for numeric columns if specified in report config
         if (reportConfig?.displayOptions != null) {
@@ -113,7 +122,7 @@ class ReportExporter {
 
     // Auto-size columns
     for (var i = 0; i < headers.length; i++) {
-      sheet.setColWidth(i, 15.0);
+      sheet.setColumnWidth(i, 15.0);
     }
 
     final excelBytes = excel.encode();

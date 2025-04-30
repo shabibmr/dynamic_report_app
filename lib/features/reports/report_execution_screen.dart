@@ -1,11 +1,24 @@
-import 'dart:convert';
+/// A screen widget that handles the execution of dynamic reports with configurable filters.
+/// This screen provides a user interface for:
+/// 1. Displaying and configuring report filters
+/// 2. Executing the report with the selected filter values
+/// 3. Displaying the report results in a data table format
+///
+/// The screen works with three main components:
+/// - Filter inputs: Generated dynamically based on the report configuration
+/// - Execute button: Triggers the report execution
+/// - Results display: Shows the report data in a scrollable table
+import 'package:dynamic_report_app/features/reports/detail_feature/bloc/report_detail_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../core/bloc/report_bloc.dart';
-import '../../core/models/report.dart';
+import '../../core/models/report_config.dart';
+import 'list_feature/bloc/report_list_bloc.dart';
 
+/// A StatefulWidget that represents the report execution interface.
+/// Takes a [ReportConfig] object that defines the report structure and filters.
 class ReportExecutionScreen extends StatefulWidget {
-  final Report report;
+  /// The report configuration containing filter definitions and display options
+  final ReportConfig report;
 
   const ReportExecutionScreen({super.key, required this.report});
 
@@ -13,10 +26,24 @@ class ReportExecutionScreen extends StatefulWidget {
   State<ReportExecutionScreen> createState() => _ReportExecutionScreenState();
 }
 
+/// The state class for ReportExecutionScreen.
+/// Manages:
+/// - Text controllers for filter inputs
+/// - Report execution state
+/// - Report data display
 class _ReportExecutionScreenState extends State<ReportExecutionScreen> {
+  /// Map of filter names to their corresponding TextEditingControllers
+  /// Used to manage the state of filter input fields
   final Map<String, TextEditingController> _controllers = {};
+
+  /// Stores the report execution results
+  /// null when no report has been executed yet
   Map<String, dynamic>? _reportData;
 
+  /// Initializes the controllers for all filter fields defined in the report configuration.
+  /// Creates TextEditingController instances for:
+  /// - Standard filters from 'filter by' section
+  /// - DateTime filters from 'dateTime' section
   @override
   void initState() {
     super.initState();
@@ -35,21 +62,30 @@ class _ReportExecutionScreenState extends State<ReportExecutionScreen> {
     }
   }
 
+  /// Cleans up resources by disposing all TextEditingControllers
   @override
   void dispose() {
     _controllers.values.forEach((controller) => controller.dispose());
     super.dispose();
   }
 
+  /// Executes the report with the current filter values.
+  /// Collects all filter values from controllers and dispatches an ExecuteReport event
+  /// to the ReportDetailBloc.
   Future<void> _executeReport() async {
-    final filters = <String, dynamic>{};
-    _controllers.forEach((key, controller) {
-      filters['\$$key'] = controller.text;
-    });
+    // final filters = <String, dynamic>{};
+    // _controllers.forEach((key, controller) {
+    //   filters['\$$key'] = controller.text;
+    // });
 
-    context.read<ReportBloc>().add(ExecuteReport(widget.report.id, filters));
+    context.read<ReportDetailBloc>().add(ExecuteReport(report: widget.report));
   }
 
+  /// Builds the filter input section of the screen.
+  /// Creates input fields for:
+  /// - Standard text filters with OutlineInputBorder
+  /// - DateTime filters with calendar picker icon
+  /// Returns a Column widget containing all filter inputs
   Widget _buildFilters() {
     final widgets = <Widget>[];
 
@@ -107,6 +143,11 @@ class _ReportExecutionScreenState extends State<ReportExecutionScreen> {
     return Column(children: widgets);
   }
 
+  /// Builds the results section displaying the report data.
+  /// - Shows a DataTable if data is available
+  /// - Handles empty data case
+  /// - Implements horizontal and vertical scrolling for large datasets
+  /// Returns a widget tree containing the results table or empty state
   Widget _buildResults() {
     if (_reportData == null) return const SizedBox.shrink();
 
@@ -139,6 +180,10 @@ class _ReportExecutionScreenState extends State<ReportExecutionScreen> {
     );
   }
 
+  /// Shows a combined date and time picker dialog.
+  /// First shows date picker, then time picker if date was selected.
+  /// Returns a DateTime object combining the selected date and time,
+  /// or null if either selection was cancelled.
   Future<DateTime?> showDateTimePicker(BuildContext context) async {
     final date = await showDatePicker(
       context: context,
@@ -165,20 +210,26 @@ class _ReportExecutionScreenState extends State<ReportExecutionScreen> {
     );
   }
 
+  /// Builds the main screen layout with:
+  /// - AppBar showing report name
+  /// - Filter section
+  /// - Execute button
+  /// - Results section with loading state handling
+  /// - Error handling through BlocListener
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.report.reportName),
       ),
-      body: BlocListener<ReportBloc, ReportState>(
+      body: BlocListener<ReportDetailBloc, ReportDetailState>(
         listener: (context, state) {
-          if (state is ReportError) {
+          if (state.status == ReportDetailStatus.failure) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
+              SnackBar(content: Text(state.error ?? 'An error occurred')),
             );
-          } else if (state is ReportExecuted) {
-            setState(() => _reportData = state.result);
+          } else if (state.status == ReportDetailStatus.success) {
+            // setState(() => _reportData = state.result);
           }
         },
         child: Padding(
@@ -193,9 +244,9 @@ class _ReportExecutionScreenState extends State<ReportExecutionScreen> {
               ),
               const SizedBox(height: 16),
               Expanded(
-                child: BlocBuilder<ReportBloc, ReportState>(
+                child: BlocBuilder<ReportDetailBloc, ReportDetailState>(
                   builder: (context, state) {
-                    if (state is ReportLoading) {
+                    if (state.status == ReportDetailStatus.loading) {
                       return const Center(child: CircularProgressIndicator());
                     }
                     return _buildResults();

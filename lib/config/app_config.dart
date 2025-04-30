@@ -5,7 +5,7 @@ class AppConfig {
 
   // API Configuration
   final String apiBaseUrl =
-      'http://localhost:8080/api'; // Replace with your actual API endpoint
+      'http://192.168.29.124/api'; // Replace with your actual API endpoint
 
   // Report Configuration
   final int defaultPageSize = 20;

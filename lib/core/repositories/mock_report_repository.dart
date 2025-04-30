@@ -1,11 +1,11 @@
-import '../models/report.dart';
+// import '../models/report.dart.txt';
 import '../models/report_config.dart';
 import '../utils/test_data.dart';
 import 'report_repository.dart';
 
 class MockReportRepository implements ReportRepository {
   @override
-  Future<List<Report>> getReports() async {
+  Future<List<ReportConfig>> getReports() async {
     // Simulate network delay
     await Future.delayed(const Duration(seconds: 1));
     return TestData.getSampleReports();
@@ -14,7 +14,6 @@ class MockReportRepository implements ReportRepository {
   @override
   Future<Map<String, dynamic>> executeReport(
     ReportConfig report,
-    Map<String, dynamic> filters,
   ) async {
     // Simulate network delay
     await Future.delayed(const Duration(seconds: 2));

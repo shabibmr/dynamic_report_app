@@ -1,4 +1,6 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
+
 import 'package:equatable/equatable.dart';
 
 class ReportConfig extends Equatable {
@@ -28,17 +30,18 @@ class ReportConfig extends Equatable {
 
   factory ReportConfig.fromJson(Map<String, dynamic> json) {
     return ReportConfig(
-      id: json['_id'],
+      id: int.parse(json['id']),
       reportName: json['report_name'],
       module: json['Module'],
       uiType: json['ui_type'],
       subType: json['sub_type'],
       query: json['query'],
-      filters: json['filters'] != null ? jsonDecode(json['filters']) : null,
-      displayOptions:
-          json['display_options'] != null
-              ? jsonDecode(json['display_options'])
-              : null,
+      filters: json['filters'] != null && json['filters'] != ''
+          ? jsonDecode(json['filters'])
+          : null,
+      displayOptions: json['display_options'] != null
+          ? jsonDecode(json['display_options'])
+          : null,
       redirectTo:
           json['redirect_to'] != null ? jsonDecode(json['redirect_to']) : null,
       extras: json['Extras'],
@@ -63,15 +66,41 @@ class ReportConfig extends Equatable {
 
   @override
   List<Object?> get props => [
-    id,
-    reportName,
-    module,
-    uiType,
-    subType,
-    query,
-    filters,
-    displayOptions,
-    redirectTo,
-    extras,
-  ];
+        id,
+        reportName,
+        module,
+        uiType,
+        subType,
+        query,
+        filters,
+        displayOptions,
+        redirectTo,
+        extras,
+      ];
+
+  ReportConfig copyWith({
+    int? id,
+    String? reportName,
+    String? module,
+    String? uiType,
+    String? subType,
+    String? query,
+    Map<String, dynamic>? filters,
+    Map<String, dynamic>? displayOptions,
+    Map<String, dynamic>? redirectTo,
+    String? extras,
+  }) {
+    return ReportConfig(
+      id: id ?? this.id,
+      reportName: reportName ?? this.reportName,
+      module: module ?? this.module,
+      uiType: uiType ?? this.uiType,
+      subType: subType ?? this.subType,
+      query: query ?? this.query,
+      filters: filters ?? this.filters,
+      displayOptions: displayOptions ?? this.displayOptions,
+      redirectTo: redirectTo ?? this.redirectTo,
+      extras: extras ?? this.extras,
+    );
+  }
 }

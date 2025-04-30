@@ -1,7 +1,7 @@
+import 'package:dynamic_report_app/features/reports/list_feature/bloc/report_list_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../core/bloc/report_bloc.dart';
-import '../../core/models/report.dart';
+// import '../../core/bloc/report_bloc.dart.txt';
 import 'report_execution_screen.dart';
 
 class ReportListScreen extends StatelessWidget {
@@ -13,11 +13,11 @@ class ReportListScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Reports'),
       ),
-      body: BlocBuilder<ReportBloc, ReportState>(
+      body: BlocBuilder<ReportListBloc, ReportListState>(
         builder: (context, state) {
-          if (state is ReportLoading) {
+          if (state.status == ReportListStatus.loading) {
             return const Center(child: CircularProgressIndicator());
-          } else if (state is ReportsLoaded) {
+          } else if (state.status == ReportListStatus.success) {
             return ListView.builder(
               itemCount: state.reports.length,
               itemBuilder: (context, index) {
@@ -36,15 +36,15 @@ class ReportListScreen extends StatelessWidget {
                 );
               },
             );
-          } else if (state is ReportError) {
-            return Center(child: Text(state.message));
+          } else if (state.status == ReportListStatus.failure) {
+            return Center(child: Text(state.error ?? 'Error loading reports'));
           }
           return const SizedBox.shrink();
         },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          context.read<ReportBloc>().add(LoadReports());
+          context.read<ReportListBloc>().add(LoadReportList());
         },
         child: const Icon(Icons.refresh),
       ),

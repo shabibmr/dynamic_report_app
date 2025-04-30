@@ -46,14 +46,14 @@ class _ReportTableState extends State<ReportTable> {
     if (_searchQuery.isEmpty) {
       filteredRows = widget.rows;
     } else {
-      filteredRows =
-          widget.rows.where((row) {
-            return row.cells.values.any((cell) {
-              final value = cell.value?.toString().toLowerCase() ?? '';
-              return value.contains(_searchQuery.toLowerCase());
-            });
-          }).toList();
+      filteredRows = widget.rows.where((row) {
+        return row.cells.values.any((cell) {
+          final value = cell.value?.toString().toLowerCase() ?? '';
+          return value.contains(_searchQuery.toLowerCase());
+        });
+      }).toList();
     }
+    print('Rows after search: ${filteredRows.length}');
     _calculateTotals();
   }
 
@@ -65,6 +65,8 @@ class _ReportTableState extends State<ReportTable> {
           padding: const EdgeInsets.all(8.0),
           child: ReportSearchField(
             onSearch: (query) {
+              print('Search query: $query');
+
               setState(() {
                 _searchQuery = query;
                 _updateFilteredRows();
@@ -137,10 +139,9 @@ class _ReportTableState extends State<ReportTable> {
       for (final column in widget.columns) {
         final value = totals[column.field];
         cells[column.field] = PlutoCell(
-          value:
-              value != null
-                  ? NumberFormatter.formatDecimal(value)
-                  : column.field == widget.columns.first.field
+          value: value != null
+              ? NumberFormatter.formatDecimal(value)
+              : column.field == widget.columns.first.field
                   ? 'Total'
                   : '',
         );

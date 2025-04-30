@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../models/report.dart';
+import '../models/report_config.dart';
 import '../repositories/report_repository.dart';
 
 // Events
@@ -8,10 +8,8 @@ abstract class ReportEvent {}
 class LoadReports extends ReportEvent {}
 
 class ExecuteReport extends ReportEvent {
-  final int reportId;
-  final Map<String, dynamic> filters;
-
-  ExecuteReport(this.reportId, this.filters);
+  final ReportConfig report;
+  ExecuteReport(this.report);
 }
 
 // States
@@ -22,7 +20,7 @@ class ReportInitial extends ReportState {}
 class ReportLoading extends ReportState {}
 
 class ReportsLoaded extends ReportState {
-  final List<Report> reports;
+  final List<ReportConfig> reports;
   ReportsLoaded(this.reports);
 }
 
@@ -65,8 +63,7 @@ class ReportBloc extends Bloc<ReportEvent, ReportState> {
     emit(ReportLoading());
     try {
       final result = await repository.executeReport(
-        event.reportId,
-        event.filters,
+        event.report,
       );
       emit(ReportExecuted(result));
     } catch (e) {

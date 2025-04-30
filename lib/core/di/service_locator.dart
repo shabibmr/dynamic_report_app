@@ -14,7 +14,7 @@ class ServiceLocator {
   late final ReportRepository _reportRepository;
 
   // Set this to false to use the real API implementation
-  static const bool useMockRepository = true;
+  static const bool useMockRepository = false;
 
   static Future<void> init() async {
     instance.initialize();
