@@ -161,6 +161,9 @@ class _ReportDetailPageState extends State<ReportDetailPage> {
     final otherFilters = (widget.report.filters?['filter by'] as List? ?? [])
         .cast<Map<String, dynamic>>();
 
+    print('Date filters : ${dateTimeFilters.length}');
+    print(' other Filters : ${otherFilters.length}');
+
     return Builder(builder: (context) {
       // Check if the filters are empty from state
       final filters = context.select(
